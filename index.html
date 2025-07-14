@@ -105,6 +105,12 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Style untuk input tanggal agar ikon kalender terlihat */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -154,14 +160,29 @@
                 <div id="filter-section" class="mb-6 bg-gray-900/50 p-5 rounded-lg border border-gray-700">
                     <h3 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="filter" class="w-5 h-5 mr-3 text-green-400"></i>Saring Data</h3>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div class="md:col-span-5">
+                        <div class="md:col-span-4">
                             <label for="filter-column" class="block text-sm font-medium text-gray-300 mb-1">Pilih Kolom</label>
                             <select id="filter-column" class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
                         </div>
-                        <div class="md:col-span-5">
+                        
+                        <!-- Kontainer untuk Filter Teks -->
+                        <div id="text-filter-container" class="md:col-span-6">
                             <label for="filter-value" class="block text-sm font-medium text-gray-300 mb-1">Cari Kata Kunci</label>
                             <input type="text" id="filter-value" class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ketikkan nilai untuk difilter...">
                         </div>
+
+                        <!-- Kontainer untuk Filter Tanggal -->
+                        <div id="date-filter-container" class="hidden md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="start-date" class="block text-sm font-medium text-gray-300 mb-1">Dari Tanggal</label>
+                                <input type="date" id="start-date" class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="end-date" class="block text-sm font-medium text-gray-300 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="end-date" class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
                         <div class="md:col-span-2 flex gap-2">
                             <button id="apply-filter-btn" class="btn-gradient w-full text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
                                 <i data-feather="search" class="w-5 h-5"></i>
@@ -239,7 +260,11 @@
         
         // Elemen Filter
         const filterColumnSelect = document.getElementById('filter-column');
+        const textFilterContainer = document.getElementById('text-filter-container');
         const filterValueInput = document.getElementById('filter-value');
+        const dateFilterContainer = document.getElementById('date-filter-container');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
         const applyFilterBtn = document.getElementById('apply-filter-btn');
         const resetFilterBtn = document.getElementById('reset-filter-btn');
 
@@ -321,7 +346,6 @@
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                // PERUBAHAN: Menggunakan 'raw: false' untuk mendapatkan nilai yang diformat (seperti tanggal dan jam)
                 parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
                 finishProcessing();
             } catch (error) {
@@ -338,6 +362,7 @@
                 return;
             }
             populateFilterOptions();
+            updateFilterUI(); // Perbarui UI filter saat pertama kali
             resetFilter(); // Tampilkan semua data saat pertama kali
             loadingArea.classList.add('hidden');
             workspaceArea.classList.remove('hidden');
@@ -413,22 +438,111 @@
             previewTable.appendChild(tbody);
         };
         
-        const applyFilter = () => {
-            const columnIndex = filterColumnSelect.value;
-            const filterText = filterValueInput.value.toLowerCase().trim();
+        // --- LOGIKA FILTER BARU ---
 
-            if (filterText === '') {
-                resetFilter();
-                return;
+        /**
+         * Mengurai string tanggal dari berbagai format umum di Indonesia.
+         * @param {string} dateString - String tanggal, misal "14/07/2025" atau "2025-07-14".
+         * @returns {Date|null} Objek Date atau null jika tidak valid.
+         */
+        const parseDate = (dateString) => {
+            if (!dateString || typeof dateString !== 'string') return null;
+
+            // Coba format DD/MM/YYYY atau DD-MM-YYYY
+            const parts = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+            if (parts) {
+                // parts[1] = day, parts[2] = month, parts[3] = year
+                const date = new Date(parts[3], parts[2] - 1, parts[1]);
+                // Validasi tanggal (misal, tidak ada tanggal 32)
+                if (date.getFullYear() == parts[3] && date.getMonth() == parts[2] - 1 && date.getDate() == parts[1]) {
+                    return date;
+                }
             }
 
+            // Coba format lain yang mungkin dikenali oleh `new Date()` (seperti YYYY-MM-DD)
+            const date = new Date(dateString);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+
+            return null;
+        };
+        
+        /**
+         * Mengecek apakah sebuah kolom berisi data tanggal dengan memeriksa beberapa baris pertama.
+         * @param {number} columnIndex - Indeks kolom yang akan diperiksa.
+         * @returns {boolean} True jika terdeteksi sebagai kolom tanggal.
+         */
+        const isDateColumn = (columnIndex) => {
+            if (parsedData.length < 2) return false;
+            let dateCount = 0;
+            const sampleSize = Math.min(10, parsedData.length - 1); // Cek hingga 10 baris data
+            for (let i = 1; i <= sampleSize; i++) {
+                const cellValue = parsedData[i][columnIndex];
+                if (cellValue && parseDate(cellValue)) {
+                    dateCount++;
+                }
+            }
+            // Anggap sebagai kolom tanggal jika lebih dari separuh sampel adalah tanggal yang valid
+            return dateCount > sampleSize / 2;
+        };
+
+        /**
+         * Memperbarui UI filter (teks atau rentang tanggal) berdasarkan kolom yang dipilih.
+         */
+        const updateFilterUI = () => {
+            const columnIndex = filterColumnSelect.value;
+            if (isDateColumn(columnIndex)) {
+                textFilterContainer.classList.add('hidden');
+                dateFilterContainer.classList.remove('hidden');
+            } else {
+                textFilterContainer.classList.remove('hidden');
+                dateFilterContainer.classList.add('hidden');
+            }
+        };
+
+        const applyFilter = () => {
+            const columnIndex = filterColumnSelect.value;
             const header = parsedData[0];
             const body = parsedData.slice(1);
-            
-            const results = body.filter(row => {
-                const cellValue = row[columnIndex] ? String(row[columnIndex]).toLowerCase().trim() : '';
-                return cellValue.includes(filterText);
-            });
+            let results = [];
+
+            // Cek apakah filter tanggal aktif
+            if (isDateColumn(columnIndex)) {
+                const startDate = startDateInput.value ? parseDate(startDateInput.value) : null;
+                const endDate = endDateInput.value ? parseDate(endDateInput.value) : null;
+
+                // Set waktu agar inklusif
+                if (startDate) startDate.setHours(0, 0, 0, 0);
+                if (endDate) endDate.setHours(23, 59, 59, 999);
+                
+                if (!startDate && !endDate) {
+                    resetFilter(); // Jika tidak ada tanggal yang dipilih, tampilkan semua
+                    return;
+                }
+
+                results = body.filter(row => {
+                    const cellValue = row[columnIndex];
+                    const cellDate = parseDate(cellValue);
+                    if (!cellDate) return false; // Abaikan baris yang tidak memiliki tanggal valid di kolom ini
+
+                    const isAfterStart = !startDate || cellDate >= startDate;
+                    const isBeforeEnd = !endDate || cellDate <= endDate;
+                    
+                    return isAfterStart && isBeforeEnd;
+                });
+
+            } else { // Filter teks biasa
+                const filterText = filterValueInput.value.toLowerCase().trim();
+                if (filterText === '') {
+                    resetFilter();
+                    return;
+                }
+                results = body.filter(row => {
+                    const cellValue = row[columnIndex] ? String(row[columnIndex]).toLowerCase().trim() : '';
+                    return cellValue.includes(filterText);
+                });
+            }
 
             filteredData = [header, ...results];
             renderPreview(filteredData);
@@ -437,9 +551,13 @@
 
         const resetFilter = () => {
             filterValueInput.value = '';
+            startDateInput.value = '';
+            endDateInput.value = '';
             filteredData = [...parsedData];
             renderPreview(filteredData);
         };
+
+        // --- FUNGSI UNDUH & UTILITAS ---
 
         const downloadExcel = () => {
             if (parsedData.length === 0) { showToast('Tidak ada data untuk diunduh.', 'error'); return; }
@@ -497,7 +615,7 @@
             originalFileName = 'hasil-konversi';
             fileInput.value = '';
             pdfTitleInput.value = '';
-            filterValueInput.value = '';
+            resetFilter();
             uploadArea.classList.remove('hidden');
             loadingArea.classList.add('hidden');
             workspaceArea.classList.add('hidden');
@@ -527,6 +645,9 @@
         dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
         
+        // Listener baru untuk mengubah UI filter saat kolom diganti
+        filterColumnSelect.addEventListener('change', updateFilterUI);
+
         applyFilterBtn.addEventListener('click', applyFilter);
         resetFilterBtn.addEventListener('click', () => {
             resetFilter();
