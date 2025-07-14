@@ -233,7 +233,7 @@
                         <!-- Opsi Unduh PDF -->
                         <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700 flex flex-col">
                             <h4 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="file" class="w-5 h-5 mr-3 text-red-400"></i>Ekspor Data ke PDF</h4>
-                            <p class="text-gray-400 mb-4 flex-grow">Unduh data dokumen PDF. Anda bisa menambahkan judul kop surat.</p>
+                            <p class="text-gray-400 mb-4 flex-grow">Unduh data yang ditampilkan di pratinjau sebagai dokumen PDF. Anda bisa menambahkan judul kop surat.</p>
                             <div class="space-y-4">
                                 <input type="text" id="pdf-title-input" class="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Judul Kop Surat (Opsional)">
                                 <button id="download-pdf-btn" class="btn-secondary w-full font-bold py-2.5 px-4 rounded-lg flex items-center justify-center">
@@ -372,12 +372,10 @@
         const processExcel = (arrayBuffer) => {
             try {
                 const data = new Uint8Array(arrayBuffer);
-                // Membaca workbook dengan opsi untuk mendapatkan teks yang diformat
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 
-                // Konversi sheet ke array of arrays secara manual, dengan memprioritaskan teks yang diformat (.w)
                 const rows = [];
                 const range = XLSX.utils.decode_range(worksheet['!ref']);
                 for (let R = range.s.r; R <= range.e.r; ++R) {
@@ -386,7 +384,6 @@
                         const cell_address = { c: C, r: R };
                         const cell_ref = XLSX.utils.encode_cell(cell_address);
                         const cell = worksheet[cell_ref];
-                        // Gunakan teks yang diformat (.w) jika ada, jika tidak, gunakan nilai mentah (.v)
                         const cellValue = cell ? (cell.w ? String(cell.w) : cell.v) : "";
                         row.push(cellValue);
                     }
@@ -410,10 +407,10 @@
             }
             populateFilterOptions();
             updateFilterUI();
-            resetFilter(); // Ini akan memanggil renderPreview dan renderDetectionTable
+            resetFilter();
             loadingArea.classList.add('hidden');
             workspaceArea.classList.remove('hidden');
-            feather.replace(); // Re-initialize icons
+            feather.replace();
             showToast('File berhasil diproses!', 'success');
         };
 
@@ -487,20 +484,17 @@
         // --- LOGIKA FILTER & DETEKSI ---
 
         const parseDate = (dateString) => {
-            if (!dateString || typeof dateString !== 'string') return null;
-            // Mencoba format dd/mm/yyyy atau dd-mm-yyyy terlebih dahulu
-            const parts = String(dateString).match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
-            if (parts) {
-                // parts[1] = day, parts[2] = month, parts[3] = year
-                const date = new Date(parts[3], parts[2] - 1, parts[1]);
-                if (date.getFullYear() == parts[3] && date.getMonth() == (parts[2] - 1) && date.getDate() == parts[1]) {
-                    return date;
+            if (!dateString) return null;
+            // Coba parse dengan format dd/mm/yyyy atau dd-mm-yyyy
+            if(typeof dateString === 'string') {
+                const parts = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+                if (parts) {
+                    return new Date(parts[3], parts[2] - 1, parts[1]);
                 }
             }
-            // Fallback ke parser bawaan JS untuk format lain (misal: YYYY-MM-DD)
+            // Fallback ke parser Date standar
             const date = new Date(dateString);
-            if (!isNaN(date.getTime())) { return date; }
-            return null;
+            return isNaN(date.getTime()) ? null : date;
         };
         
         const isDateColumn = (columnIndex) => {
@@ -508,11 +502,10 @@
             let dateCount = 0;
             const sampleSize = Math.min(10, parsedData.length - 1);
             for (let i = 1; i <= sampleSize; i++) {
-                if (parsedData[i][columnIndex] && parseDate(String(parsedData[i][columnIndex]))) {
+                if (parsedData[i][columnIndex] && parseDate(parsedData[i][columnIndex])) {
                     dateCount++;
                 }
             }
-            // Anggap sebagai kolom tanggal jika lebih dari separuh sampel adalah tanggal yang valid
             return dateCount > sampleSize / 2;
         };
 
@@ -539,10 +532,13 @@
                 if (startDate) startDate.setHours(0, 0, 0, 0);
                 if (endDate) endDate.setHours(23, 59, 59, 999);
                 
-                if (!startDate && !endDate) { resetFilter(); return; }
+                if (!startDate && !endDate) {
+                    resetFilter();
+                    return;
+                }
 
                 results = body.filter(row => {
-                    const cellDate = parseDate(String(row[columnIndex]));
+                    const cellDate = parseDate(row[columnIndex]);
                     if (!cellDate) return false;
                     const isAfterStart = !startDate || cellDate >= startDate;
                     const isBeforeEnd = !endDate || cellDate <= endDate;
@@ -550,7 +546,10 @@
                 });
             } else {
                 const filterText = filterValueInput.value.toLowerCase().trim();
-                if (filterText === '') { resetFilter(); return; }
+                if (filterText === '') {
+                    resetFilter();
+                    return;
+                }
                 results = body.filter(row => {
                     const cellValue = row[columnIndex] ? String(row[columnIndex]).toLowerCase().trim() : '';
                     return cellValue.includes(filterText);
@@ -559,7 +558,7 @@
 
             filteredData = [header, ...results];
             renderPreview(filteredData);
-            renderDetectionTable(parsedData); 
+            renderDetectionTable(filteredData); // DIPERBARUI: Analisis berdasarkan data yang difilter
             showToast(`${results.length} baris data ditemukan di pratinjau.`, 'info');
         };
 
@@ -569,7 +568,7 @@
             endDateInput.value = '';
             filteredData = [...parsedData];
             renderPreview(filteredData);
-            renderDetectionTable(parsedData);
+            renderDetectionTable(filteredData); // DIPERBARUI: Analisis berdasarkan data yang difilter (dalam hal ini, semua data)
         };
 
         const findColumnIndices = (headers) => {
@@ -597,6 +596,7 @@
             }
             
             const headers = data[0];
+            const body = data.slice(1);
             const indices = findColumnIndices(headers);
 
             if (indices.nama === -1) {
@@ -606,8 +606,7 @@
             }
 
             const nameCounts = new Map();
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
+            for (const row of body) {
                 const name = row[indices.nama] ? String(row[indices.nama]).trim() : '';
                 const className = indices.kelas !== -1 && row[indices.kelas] ? String(row[indices.kelas]).trim() : '';
                 const key = `${name}|${className}`;
@@ -618,8 +617,7 @@
             }
 
             const reportDataStaging = [];
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
+            for (const row of body) {
                 const name = row[indices.nama] ? String(row[indices.nama]).trim() : '';
                 const className = indices.kelas !== -1 && row[indices.kelas] ? String(row[indices.kelas]).trim() : '';
                 const key = `${name}|${className}`;
