@@ -77,9 +77,9 @@
             box-shadow: 0 7px 20px 0 rgba(46, 160, 67, 0.5);
         }
         .btn-secondary {
-             background-color: #21262d;
-             border: 1px solid #30363d;
-             transition: all 0.3s ease;
+            background-color: #21262d;
+            border: 1px solid #30363d;
+            transition: all 0.3s ease;
         }
         .btn-secondary:hover {
             background-color: #30363d;
@@ -321,7 +321,8 @@
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                // PERUBAHAN: Menggunakan 'raw: false' untuk mendapatkan nilai yang diformat (seperti tanggal dan jam)
+                parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
                 finishProcessing();
             } catch (error) {
                 console.error("Error Excel:", error);
