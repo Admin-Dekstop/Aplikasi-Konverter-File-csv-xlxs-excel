@@ -158,10 +158,10 @@
 
                 <!-- Filter Data -->
                 <div id="filter-section" class="mb-6 bg-gray-900/50 p-5 rounded-lg border border-gray-700">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="filter" class="w-5 h-5 mr-3 text-green-400"></i>Saring Data</h3>
+                    <h3 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="filter" class="w-5 h-5 mr-3 text-green-400"></i>Saring Data Pratinjau</h3>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                         <div class="md:col-span-4">
-                            <label for="filter-column" class="block text-sm font-medium text-gray-300 mb-1">Pilih Kolom</label>
+                            <label for="filter-column" class="block text-sm font-medium text-gray-300 mb-1">Pilih Kolom untuk Filter</label>
                             <select id="filter-column" class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
                         </div>
                         
@@ -184,7 +184,7 @@
                         </div>
 
                         <div class="md:col-span-2 flex gap-2">
-                            <button id="apply-filter-btn" class="btn-gradient w-full text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                            <button id="apply-filter-btn" class="btn-gradient w-full text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center" title="Terapkan Filter">
                                 <i data-feather="search" class="w-5 h-5"></i>
                             </button>
                             <button id="reset-filter-btn" class="btn-secondary w-auto py-2 px-3 rounded-lg flex items-center justify-center" title="Hapus Filter">
@@ -204,14 +204,36 @@
                     </div>
                 </div>
 
+                <!-- Bagian Deteksi Data Duplikat (DIPERBARUI) -->
+                <div id="detection-area" class="mt-8 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                        <h3 class="text-2xl font-bold text-white">Laporan Keterlambatan Berulang</h3>
+                        <div class="flex gap-2">
+                             <button id="download-detection-pdf-btn" class="btn-secondary w-full sm:w-auto font-bold py-2 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <i data-feather="file-text" class="w-4 h-4 mr-2"></i>
+                                Unduh (PDF)
+                            </button>
+                            <button id="download-detection-excel-btn" class="btn-secondary w-full sm:w-auto font-bold py-2 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <i data-feather="grid" class="w-4 h-4 mr-2"></i>
+                                Unduh (Excel)
+                            </button>
+                        </div>
+                    </div>
+                    <div class="preview-container max-h-72 overflow-auto border border-gray-700 rounded-lg bg-gray-900/70">
+                        <table class="w-full text-sm text-left" id="detection-table">
+                            <!-- Konten tabel deteksi akan diisi oleh JavaScript -->
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Opsi Unduhan -->
                 <div class="mt-8">
                     <h3 class="text-2xl font-bold mb-4 text-white">Opsi Ekspor</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Opsi Unduh PDF -->
                         <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700 flex flex-col">
-                            <h4 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="file" class="w-5 h-5 mr-3 text-red-400"></i>Ekspor ke PDF</h4>
-                            <p class="text-gray-400 mb-4 flex-grow">Unduh data yang telah difilter sebagai dokumen PDF. Anda bisa menambahkan judul kop surat.</p>
+                            <h4 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="file" class="w-5 h-5 mr-3 text-red-400"></i>Ekspor Data ke PDF</h4>
+                            <p class="text-gray-400 mb-4 flex-grow">Unduh data dokumen PDF. Anda bisa menambahkan judul kop surat.</p>
                             <div class="space-y-4">
                                 <input type="text" id="pdf-title-input" class="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Judul Kop Surat (Opsional)">
                                 <button id="download-pdf-btn" class="btn-secondary w-full font-bold py-2.5 px-4 rounded-lg flex items-center justify-center">
@@ -223,12 +245,12 @@
 
                         <!-- Opsi Unduh Excel -->
                         <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700 flex flex-col">
-                            <h4 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="grid" class="w-5 h-5 mr-3 text-green-400"></i>Ekspor ke Excel</h4>
-                             <p class="text-gray-400 mb-4 flex-grow">Simpan seluruh data asli (tanpa filter) ke dalam format file <code class="bg-gray-700 text-xs p-1 rounded">.xlsx</code>.</p>
-                             <div class="mt-auto">
+                            <h4 class="text-xl font-semibold mb-4 flex items-center"><i data-feather="grid" class="w-5 h-5 mr-3 text-green-400"></i>Ekspor Data Asli ke Excel</h4>
+                            <p class="text-gray-400 mb-4 flex-grow">Simpan seluruh data asli (tanpa filter) dari file yang Anda unggah ke dalam format <code class="bg-gray-700 text-xs p-1 rounded">.xlsx</code>.</p>
+                            <div class="mt-auto">
                                 <button id="download-excel-btn" class="btn-gradient w-full text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center">
                                     <i data-feather="download-cloud" class="w-5 h-5 mr-2"></i>
-                                    Unduh Excel
+                                    Unduh Excel (Data Asli)
                                 </button>
                             </div>
                         </div>
@@ -268,9 +290,16 @@
         const applyFilterBtn = document.getElementById('apply-filter-btn');
         const resetFilterBtn = document.getElementById('reset-filter-btn');
 
+        // Elemen Deteksi Duplikat
+        const detectionArea = document.getElementById('detection-area');
+        const detectionTable = document.getElementById('detection-table');
+        const downloadDetectionExcelBtn = document.getElementById('download-detection-excel-btn');
+        const downloadDetectionPdfBtn = document.getElementById('download-detection-pdf-btn');
+
         // Variabel global
         let parsedData = [];
-        let filteredData = []; // Untuk menyimpan data hasil filter
+        let filteredData = []; 
+        let lateReportData = []; // Menyimpan data laporan keterlambatan
         let originalFileName = 'hasil-konversi';
 
         // --- FUNGSI UTAMA ---
@@ -343,10 +372,28 @@
         const processExcel = (arrayBuffer) => {
             try {
                 const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
+                // Membaca workbook dengan opsi untuk mendapatkan teks yang diformat
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+                
+                // Konversi sheet ke array of arrays secara manual, dengan memprioritaskan teks yang diformat (.w)
+                const rows = [];
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    const row = [];
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cell_address = { c: C, r: R };
+                        const cell_ref = XLSX.utils.encode_cell(cell_address);
+                        const cell = worksheet[cell_ref];
+                        // Gunakan teks yang diformat (.w) jika ada, jika tidak, gunakan nilai mentah (.v)
+                        const cellValue = cell ? (cell.w ? String(cell.w) : cell.v) : "";
+                        row.push(cellValue);
+                    }
+                    rows.push(row);
+                }
+                
+                parsedData = rows;
                 finishProcessing();
             } catch (error) {
                 console.error("Error Excel:", error);
@@ -362,10 +409,11 @@
                 return;
             }
             populateFilterOptions();
-            updateFilterUI(); // Perbarui UI filter saat pertama kali
-            resetFilter(); // Tampilkan semua data saat pertama kali
+            updateFilterUI();
+            resetFilter(); // Ini akan memanggil renderPreview dan renderDetectionTable
             loadingArea.classList.add('hidden');
             workspaceArea.classList.remove('hidden');
+            feather.replace(); // Re-initialize icons
             showToast('File berhasil diproses!', 'success');
         };
 
@@ -383,7 +431,7 @@
 
         const renderPreview = (dataToRender) => {
             previewTable.innerHTML = '';
-            if (!dataToRender || dataToRender.length <= 1) { // Check jika hanya ada header
+            if (!dataToRender || dataToRender.length <= 1) {
                 const tbody = document.createElement('tbody');
                 const row = tbody.insertRow();
                 const cell = row.insertCell();
@@ -391,7 +439,7 @@
                 cell.textContent = 'Tidak ada data yang cocok dengan filter Anda.';
                 cell.className = 'text-center text-gray-400 py-10';
                 previewTable.appendChild(tbody);
-                if (dataToRender && dataToRender.length > 0) { // Tetap tampilkan header jika tidak ada data
+                if (dataToRender && dataToRender.length > 0) {
                     const thead = document.createElement('thead');
                     thead.className = "text-xs text-gray-400 uppercase bg-gray-800";
                     const headerRow = document.createElement('tr');
@@ -403,12 +451,11 @@
                         headerRow.appendChild(th);
                     });
                     thead.appendChild(headerRow);
-                    previewTable.prepend(thead); // Prepend agar muncul di atas pesan "no data"
+                    previewTable.prepend(thead);
                 }
                 return;
             };
 
-            const headerCount = dataToRender[0].length;
             const thead = document.createElement('thead');
             thead.className = "text-xs text-gray-400 uppercase bg-gray-800";
             const headerRow = document.createElement('tr');
@@ -423,63 +470,45 @@
             previewTable.appendChild(thead);
 
             const tbody = document.createElement('tbody');
-            dataToRender.slice(1, 101).forEach(rowData => { // Batasi pratinjau hingga 100 baris
+            dataToRender.slice(1).forEach(rowData => {
                 const row = document.createElement('tr');
                 row.className = "bg-gray-900 border-b border-gray-700 hover:bg-gray-800/50";
-                for (let i = 0; i < headerCount; i++) {
-                    const cellData = rowData[i] || "";
+                rowData.forEach(cellData => {
                     const td = document.createElement('td');
                     td.className = "px-6 py-4";
-                    td.textContent = cellData;
+                    td.textContent = cellData || "";
                     row.appendChild(td);
-                }
+                });
                 tbody.appendChild(row);
             });
             previewTable.appendChild(tbody);
         };
         
-        // --- LOGIKA FILTER BARU ---
+        // --- LOGIKA FILTER & DETEKSI ---
 
-        /**
-         * Mengurai string tanggal dari berbagai format umum di Indonesia.
-         * @param {string} dateString - String tanggal, misal "14/07/2025" atau "2025-07-14".
-         * @returns {Date|null} Objek Date atau null jika tidak valid.
-         */
         const parseDate = (dateString) => {
             if (!dateString || typeof dateString !== 'string') return null;
-
-            // Coba format DD/MM/YYYY atau DD-MM-YYYY
-            const parts = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+            // Mencoba format dd/mm/yyyy atau dd-mm-yyyy terlebih dahulu
+            const parts = String(dateString).match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
             if (parts) {
                 // parts[1] = day, parts[2] = month, parts[3] = year
                 const date = new Date(parts[3], parts[2] - 1, parts[1]);
-                // Validasi tanggal (misal, tidak ada tanggal 32)
-                if (date.getFullYear() == parts[3] && date.getMonth() == parts[2] - 1 && date.getDate() == parts[1]) {
+                if (date.getFullYear() == parts[3] && date.getMonth() == (parts[2] - 1) && date.getDate() == parts[1]) {
                     return date;
                 }
             }
-
-            // Coba format lain yang mungkin dikenali oleh `new Date()` (seperti YYYY-MM-DD)
+            // Fallback ke parser bawaan JS untuk format lain (misal: YYYY-MM-DD)
             const date = new Date(dateString);
-            if (!isNaN(date.getTime())) {
-                return date;
-            }
-
+            if (!isNaN(date.getTime())) { return date; }
             return null;
         };
         
-        /**
-         * Mengecek apakah sebuah kolom berisi data tanggal dengan memeriksa beberapa baris pertama.
-         * @param {number} columnIndex - Indeks kolom yang akan diperiksa.
-         * @returns {boolean} True jika terdeteksi sebagai kolom tanggal.
-         */
         const isDateColumn = (columnIndex) => {
             if (parsedData.length < 2) return false;
             let dateCount = 0;
-            const sampleSize = Math.min(10, parsedData.length - 1); // Cek hingga 10 baris data
+            const sampleSize = Math.min(10, parsedData.length - 1);
             for (let i = 1; i <= sampleSize; i++) {
-                const cellValue = parsedData[i][columnIndex];
-                if (cellValue && parseDate(cellValue)) {
+                if (parsedData[i][columnIndex] && parseDate(String(parsedData[i][columnIndex]))) {
                     dateCount++;
                 }
             }
@@ -487,9 +516,6 @@
             return dateCount > sampleSize / 2;
         };
 
-        /**
-         * Memperbarui UI filter (teks atau rentang tanggal) berdasarkan kolom yang dipilih.
-         */
         const updateFilterUI = () => {
             const columnIndex = filterColumnSelect.value;
             if (isDateColumn(columnIndex)) {
@@ -507,37 +533,24 @@
             const body = parsedData.slice(1);
             let results = [];
 
-            // Cek apakah filter tanggal aktif
             if (isDateColumn(columnIndex)) {
-                const startDate = startDateInput.value ? parseDate(startDateInput.value) : null;
-                const endDate = endDateInput.value ? parseDate(endDateInput.value) : null;
-
-                // Set waktu agar inklusif
+                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
                 if (startDate) startDate.setHours(0, 0, 0, 0);
                 if (endDate) endDate.setHours(23, 59, 59, 999);
                 
-                if (!startDate && !endDate) {
-                    resetFilter(); // Jika tidak ada tanggal yang dipilih, tampilkan semua
-                    return;
-                }
+                if (!startDate && !endDate) { resetFilter(); return; }
 
                 results = body.filter(row => {
-                    const cellValue = row[columnIndex];
-                    const cellDate = parseDate(cellValue);
-                    if (!cellDate) return false; // Abaikan baris yang tidak memiliki tanggal valid di kolom ini
-
+                    const cellDate = parseDate(String(row[columnIndex]));
+                    if (!cellDate) return false;
                     const isAfterStart = !startDate || cellDate >= startDate;
                     const isBeforeEnd = !endDate || cellDate <= endDate;
-                    
                     return isAfterStart && isBeforeEnd;
                 });
-
-            } else { // Filter teks biasa
+            } else {
                 const filterText = filterValueInput.value.toLowerCase().trim();
-                if (filterText === '') {
-                    resetFilter();
-                    return;
-                }
+                if (filterText === '') { resetFilter(); return; }
                 results = body.filter(row => {
                     const cellValue = row[columnIndex] ? String(row[columnIndex]).toLowerCase().trim() : '';
                     return cellValue.includes(filterText);
@@ -546,7 +559,8 @@
 
             filteredData = [header, ...results];
             renderPreview(filteredData);
-            showToast(`${results.length} baris data ditemukan.`, 'info');
+            renderDetectionTable(parsedData); 
+            showToast(`${results.length} baris data ditemukan di pratinjau.`, 'info');
         };
 
         const resetFilter = () => {
@@ -555,13 +569,205 @@
             endDateInput.value = '';
             filteredData = [...parsedData];
             renderPreview(filteredData);
+            renderDetectionTable(parsedData);
         };
 
-        // --- FUNGSI UNDUH & UTILITAS ---
+        const findColumnIndices = (headers) => {
+            const findIndex = (keywords) => {
+                for (const keyword of keywords) {
+                    const index = headers.findIndex(h => h && h.toLowerCase().includes(keyword));
+                    if (index !== -1) return index;
+                }
+                return -1;
+            };
+            return {
+                nama: findIndex(['nama']),
+                kelas: findIndex(['kelas', 'class']),
+                tanggal: findIndex(['tanggal', 'date']),
+            };
+        };
+
+        const renderDetectionTable = (data) => {
+            lateReportData = [];
+            detectionTable.innerHTML = '';
+
+            if (!data || data.length <= 1) {
+                detectionArea.classList.add('hidden');
+                return;
+            }
+            
+            const headers = data[0];
+            const indices = findColumnIndices(headers);
+
+            if (indices.nama === -1) {
+                detectionArea.classList.remove('hidden');
+                detectionTable.innerHTML = `<tbody><tr><td class="text-center text-gray-400 py-10">Analisis gagal: Kolom "Nama" tidak ditemukan.</td></tr></tbody>`;
+                return;
+            }
+
+            const nameCounts = new Map();
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const name = row[indices.nama] ? String(row[indices.nama]).trim() : '';
+                const className = indices.kelas !== -1 && row[indices.kelas] ? String(row[indices.kelas]).trim() : '';
+                const key = `${name}|${className}`;
+                
+                if (name) {
+                    nameCounts.set(key, (nameCounts.get(key) || 0) + 1);
+                }
+            }
+
+            const reportDataStaging = [];
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const name = row[indices.nama] ? String(row[indices.nama]).trim() : '';
+                const className = indices.kelas !== -1 && row[indices.kelas] ? String(row[indices.kelas]).trim() : '';
+                const key = `${name}|${className}`;
+                const totalCount = nameCounts.get(key) || 0;
+
+                if (totalCount > 1) {
+                    reportDataStaging.push({
+                        row: row,
+                        totalCount: totalCount
+                    });
+                }
+            }
+            
+            lateReportData = reportDataStaging;
+
+            if (lateReportData.length === 0) {
+                detectionArea.classList.add('hidden');
+                return;
+            }
+            detectionArea.classList.remove('hidden');
+
+            const tableHeaders = ['Nama', 'Kelas', 'Hari', 'Tanggal', 'Total Keterlambatan'];
+            if (indices.kelas === -1) {
+                tableHeaders.splice(1, 1);
+            }
+            const thead = document.createElement('thead');
+            thead.className = "text-xs text-gray-400 uppercase bg-gray-800";
+            let headerHTML = '<tr>';
+            tableHeaders.forEach(h => {
+                headerHTML += `<th scope="col" class="px-6 py-3 tracking-wider">${h}</th>`;
+            });
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
+            detectionTable.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            const daysInIndonesian = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            
+            lateReportData.forEach(item => {
+                const rowData = item.row;
+                const tr = document.createElement('tr');
+                tr.className = "bg-gray-900 border-b border-gray-700 hover:bg-gray-800/50";
+
+                const nameVal = rowData[indices.nama] || '';
+                const classVal = indices.kelas !== -1 ? (rowData[indices.kelas] || '') : null;
+                const originalDateVal = indices.tanggal !== -1 ? (rowData[indices.tanggal] || '') : '';
+                let dayName = '';
+
+                const d = parseDate(originalDateVal);
+                if (d) {
+                    dayName = daysInIndonesian[d.getDay()];
+                }
+
+                let rowHTML = `<td class="px-6 py-4 font-medium">${nameVal}</td>`;
+                if (classVal !== null) {
+                    rowHTML += `<td class="px-6 py-4">${classVal}</td>`;
+                }
+                rowHTML += `<td class="px-6 py-4">${dayName}</td>`;
+                rowHTML += `<td class="px-6 py-4">${originalDateVal}</td>`;
+                rowHTML += `<td class="px-6 py-4 text-center">${item.totalCount}</td>`;
+                
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+            detectionTable.appendChild(tbody);
+        };
+
+        // --- FUNGSI UNDUH & UTILITAS (DIPERBARUI) ---
+
+        const downloadDetectionData = (format) => {
+            if (lateReportData.length === 0) {
+                showToast('Tidak ada data keterlambatan berulang untuk diunduh.', 'error');
+                return;
+            }
+            
+            const headers = parsedData[0];
+            const indices = findColumnIndices(headers);
+
+            const tableHeaders = ['Nama', 'Kelas', 'Hari', 'Tanggal', 'Total Keterlambatan'];
+            if (indices.kelas === -1) {
+                tableHeaders.splice(1, 1);
+            }
+            
+            const daysInIndonesian = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+            const body = lateReportData.map(item => {
+                const rowData = item.row;
+                const nameVal = rowData[indices.nama] || '';
+                const classVal = indices.kelas !== -1 ? (rowData[indices.kelas] || '') : null;
+                const originalDateVal = indices.tanggal !== -1 ? (rowData[indices.tanggal] || '') : '';
+                let dayName = '';
+
+                const d = parseDate(originalDateVal);
+                if (d) {
+                    dayName = daysInIndonesian[d.getDay()];
+                }
+
+                const rowForExport = [
+                    nameVal,
+                    dayName,
+                    originalDateVal,
+                    item.totalCount
+                ];
+                
+                if (classVal !== null) {
+                    rowForExport.splice(1, 0, classVal);
+                }
+
+                return rowForExport;
+            });
+
+            if (format === 'excel') {
+                const dataForSheet = [tableHeaders, ...body];
+                const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Keterlambatan');
+                XLSX.writeFile(workbook, `${originalFileName}_laporan_keterlambatan.xlsx`);
+            } else if (format === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                doc.autoTable({
+                    head: [tableHeaders],
+                    body: body,
+                    startY: 80,
+                    theme: 'grid',
+                    styles: { font: 'helvetica', fillColor: [22, 27, 34], textColor: [201, 209, 217], lineColor: [48, 54, 61], lineWidth: 0.5 },
+                    headStyles: { fillColor: [33, 38, 45], textColor: [240, 246, 252], fontStyle: 'bold' },
+                    didDrawPage: function (data) {
+                        doc.setFontSize(18);
+                        doc.setTextColor('#2f81f7');
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Laporan Keterlambatan Berulang', doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(150);
+                        doc.text(`Sumber Data: ${fileInfo.textContent}`, doc.internal.pageSize.getWidth() / 2, 55, { align: 'center' });
+                        doc.setDrawColor(48, 54, 61);
+                        doc.setLineWidth(1);
+                        doc.line(data.settings.margin.left, 68, doc.internal.pageSize.getWidth() - data.settings.margin.right, 68);
+                    },
+                });
+                doc.save(`${originalFileName}_laporan_keterlambatan.pdf`);
+            }
+        };
 
         const downloadExcel = () => {
             if (parsedData.length === 0) { showToast('Tidak ada data untuk diunduh.', 'error'); return; }
-            const worksheet = XLSX.utils.aoa_to_sheet(parsedData); // Selalu unduh data lengkap
+            const worksheet = XLSX.utils.aoa_to_sheet(parsedData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Lengkap');
             XLSX.writeFile(workbook, `${originalFileName}_lengkap.xlsx`);
@@ -569,7 +775,7 @@
 
         const downloadPdf = () => {
             const dataToDownload = filteredData.length > 1 ? filteredData : parsedData;
-            if (dataToDownload.length <= 1) { // <= 1 karena header selalu ada
+            if (dataToDownload.length <= 1) {
                 showToast('Tidak ada data untuk diunduh (cek filter Anda).', 'error');
                 return;
             }
@@ -588,37 +794,33 @@
                 styles: { font: 'helvetica', fillColor: [22, 27, 34], textColor: [201, 209, 217], lineColor: [48, 54, 61], lineWidth: 0.5 },
                 headStyles: { fillColor: [33, 38, 45], textColor: [240, 246, 252], fontStyle: 'bold' },
                 didDrawPage: function (data) {
-                    // Kop Surat
                     doc.setFontSize(18);
-                    doc.setTextColor('#2f81f7'); // Warna Biru
+                    doc.setTextColor('#2f81f7');
                     doc.setFont('helvetica', 'bold');
                     doc.text(title, doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
-
                     doc.setFontSize(10);
                     doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(150); // Warna abu-abu
+                    doc.setTextColor(150);
                     doc.text(`Sumber Data: ${fileInfo.textContent}`, doc.internal.pageSize.getWidth() / 2, 55, { align: 'center' });
-                    
-                    // Garis pemisah
-                    doc.setDrawColor(48, 54, 61); // Warna garis
+                    doc.setDrawColor(48, 54, 61);
                     doc.setLineWidth(1);
                     doc.line(data.settings.margin.left, 68, doc.internal.pageSize.getWidth() - data.settings.margin.right, 68);
                 },
             });
-
             doc.save(`${originalFileName}_difilter.pdf`);
         };
 
         const resetApp = () => {
             parsedData = [];
             filteredData = [];
+            lateReportData = [];
             originalFileName = 'hasil-konversi';
             fileInput.value = '';
             pdfTitleInput.value = '';
-            resetFilter();
             uploadArea.classList.remove('hidden');
             loadingArea.classList.add('hidden');
             workspaceArea.classList.add('hidden');
+            detectionArea.classList.add('hidden');
         };
 
         const showToast = (message, type = 'info') => {
@@ -645,9 +847,7 @@
         dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
         
-        // Listener baru untuk mengubah UI filter saat kolom diganti
         filterColumnSelect.addEventListener('change', updateFilterUI);
-
         applyFilterBtn.addEventListener('click', applyFilter);
         resetFilterBtn.addEventListener('click', () => {
             resetFilter();
@@ -657,6 +857,8 @@
         
         downloadExcelBtn.addEventListener('click', downloadExcel);
         downloadPdfBtn.addEventListener('click', downloadPdf);
+        downloadDetectionExcelBtn.addEventListener('click', () => downloadDetectionData('excel'));
+        downloadDetectionPdfBtn.addEventListener('click', () => downloadDetectionData('pdf'));
         resetBtn.addEventListener('click', resetApp);
 
     </script>
